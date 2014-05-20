@@ -9,6 +9,7 @@ var succeed = Parsimmon.succeed
 var seq = Parsimmon.seq
 var alt = Parsimmon.alt
 var any = Parsimmon.any
+var eof = Parsimmon.eof
 
 var lsqBlanket = lexeme(string("["))
 var rsqBlanket = lexeme(string("]"))
@@ -21,29 +22,27 @@ function dbg(x){
 function lexeme(p) { return p.skip(optWhitespace); }
 
 module.exports = function(css){
-  function combinatorSep(parser) {
-    var combiParser = regex(/([\s>~+])/m).then(parser).many()
-    return seq(parser, combiParser).map(function(results) {
-      // Flatten array
-      return [results[0]].concat(results[1]);
-    }).or(succeed([]));
-  }
-  css = ".cc>a+b"
-  //var combinator = lexeme(regex(/[\s>~+]/))
-  //var combinator = regex(/[\s>~+]/).map(dbg)
-  var selector = regex(/[^\s>~+]+/).map(dbg)
-  var atom = combinatorSep(selector)
+  // selector
+  var selector = regex(/[^\s>~+]+/) // TODO: create NOT
 
-  var exp = lazy(function(){
+  // combinator
+  var empty = string('').result(null)
+  var ancestory = regex(/\s+/).result(' ')
+  var combinators = seq(optWhitespace, regex(/[>~+]+/), optWhitespace).map(function(r){
+    return r[1]
+  })
+  var combinator = alt(combinators, ancestory, empty)
+
+  // main parser
+  var atom = seq(selector , combinator).map(function(r){
+    return {
+      selector : r[0],
+      combinator : r[1]
+    }
+  }).many()
+  var exec = lazy(function(){
     return atom
-    //return seq(selector, combinator)
-
-    //return selector
-    //return seq(selector)
-    //return alt(selector, combinator)
   })
 
-
-  return exp.parse(css)
-
+  return atom.parse(css)
 }

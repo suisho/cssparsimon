@@ -1,27 +1,33 @@
 var parser = require("../")
 var assert = require("assert")
 
-var itParsed = function(css, cb){
-  it(css, function(){
+var itParsed = function(css, memo, cb){
+  if(cb === undefined){
+    cb = memo
+    memo = ""
+  }
+  memo = memo || ""
+  it(css +" "+ memo, function(){
     var result = parser(css)
     cb(result, result.status, result.value)
   })
 }
 
-var itStatusTrue = function(css){
-  itParsed(css, function(r,st,v){
+var itStatusTrue = function(css, memo){
+  itParsed(css,memo, function(r,st,v){
     assert.ok(st)
   })
 }
 
 describe("status true", function(){
+  itStatusTrue("")
   itStatusTrue("a")
   itStatusTrue("a ")
   itStatusTrue("a  ")
   itStatusTrue("a+b")
   itStatusTrue("a  b")
-  itStatusTrue("a b")
-  itStatusTrue("a + b")
+  itStatusTrue("a b", "foo")
+  itStatusTrue("a + b", "foo")
   itStatusTrue("a +b")
   itStatusTrue("a+ b")
   itStatusTrue("a+b~c")
@@ -33,7 +39,7 @@ describe("combinator", function(){
     assert.equal(v[1].combinator, null)
   })
   itParsed("a b", function(r,st,v){
-    console.log(v)
+    console.log(r)
     assert.equal(v[0].combinator, " ")
     assert.equal(v[1].combinator, null)
   })
