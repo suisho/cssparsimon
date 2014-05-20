@@ -15,6 +15,8 @@ var itParsed = function(css, memo, cb){
 
 var itStatusTrue = function(css, memo){
   itParsed(css,memo, function(r,st,v){
+    //console.log(r)
+
     assert.ok(st)
   })
 }
@@ -39,8 +41,19 @@ describe("combinator", function(){
     assert.equal(v[1].combinator, null)
   })
   itParsed("a b", function(r,st,v){
-    console.log(r)
     assert.equal(v[0].combinator, " ")
+    assert.equal(v[1].combinator, null)
+  })
+  itParsed("a > b", function(r,st,v){
+    assert.equal(v[0].combinator, ">")
+    assert.equal(v[1].combinator, null)
+  })
+  itParsed("a> b", function(r,st,v){
+    assert.equal(v[0].combinator, ">")
+    assert.equal(v[1].combinator, null)
+  })
+  itParsed("a >b", function(r,st,v){
+    assert.equal(v[0].combinator, ">")
     assert.equal(v[1].combinator, null)
   })
 })

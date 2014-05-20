@@ -20,18 +20,29 @@ function dbg(x){
 }
 
 function lexeme(p) { return p.skip(optWhitespace); }
+function not(reg){
+  return regex(RegExp("((?!"+reg.source+").)+"))
+}
+var empty = string('').result(null)
+var ancestory = regex(/\s+/).result(' ')
+var someCombinatorReg = regex(/[>~+]+/)
+var someCombinators = seq(optWhitespace, someCombinatorReg, optWhitespace).map(function(r){
+  return r[1]
+})
+
+var combinatorParser = function(){
+  var combinators = someCombinators
+  return lazy(function(){
+    return alt(combinators, ancestory, empty)
+  })
+}
 
 module.exports = function(css){
   // selector
-  var selector = regex(/[^\s>~+]+/) // TODO: create NOT
+  var selector = not(/[\s>~+]/) // TODO: create NOT
 
   // combinator
-  var empty = string('').result(null)
-  var ancestory = regex(/\s+/).result(' ')
-  var combinators = seq(optWhitespace, regex(/[>~+]+/), optWhitespace).map(function(r){
-    return r[1]
-  })
-  var combinator = alt(combinators, ancestory, empty)
+  var combinator = combinatorParser()
 
   // main parser
   var atom = seq(selector , combinator).map(function(r){
