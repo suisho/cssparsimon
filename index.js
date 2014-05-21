@@ -4,7 +4,7 @@ var Parsimmon = require("parsimmon")
 var regex = Parsimmon.regex;
 var string = Parsimmon.string;
 var lazy = Parsimmon.lazy;
-var optWhitespace = Parsimmon.optWhitespace;
+var optWs = Parsimmon.optWhitespace;
 var succeed = Parsimmon.succeed
 var seq = Parsimmon.seq
 var alt = Parsimmon.alt
@@ -19,33 +19,40 @@ function dbg(x){
   return x
 }
 
-function lexeme(p) { return p.skip(optWhitespace); }
+function lexeme(p) { return p.skip(optWs); }
 function not(reg){
   return regex(RegExp("((?!"+reg.source+").)+"))
 }
-var empty = string('').result(null)
-var ancestory = regex(/\s+/).result(' ')
-var someCombinatorReg = regex(/[>~+]+/)
-var someCombinators = seq(optWhitespace, someCombinatorReg, optWhitespace).map(function(r){
-  return r[1]
-})
+
+var combinators = {
+  'descendant' : '\s',
+  'child' : '>',
+  'adjacent' : '+',
+  'sibiling' : '~'
+}
 
 var combinatorParser = function(){
-  var combinators = someCombinators
+  var empty = string('').result(null)
+  var ancestory = regex(/\s+/).result(' ')
+  var others = seq(optWs, regex(/[>~+]+/), optWs).map(function(r){
+    return r[1]
+  })
   return lazy(function(){
-    return alt(combinators, ancestory, empty)
+    return alt(others, ancestory, empty)
   })
 }
 
-module.exports = function(css){
-  // selector
-  var selector = not(/[\s>~+]/) // TODO: create NOT
+var selectorParser = function(){
+  var selector = not(/[\s>~+]/)
+  return selector
+}
 
-  // combinator
+module.exports = function(css){
+  var selector = selectorParser()
   var combinator = combinatorParser()
 
   // main parser
-  var atom = seq(selector , combinator).map(function(r){
+  var atom = seq(selector,combinator).map(function(r){
     return {
       selector : r[0],
       combinator : r[1]
@@ -55,5 +62,5 @@ module.exports = function(css){
     return atom
   })
 
-  return atom.parse(css)
+  return exec.parse(css)
 }
