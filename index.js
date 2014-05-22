@@ -38,12 +38,23 @@ var combinatorSep = function(parser){
   var others = seq(optWs, regex(/[>~+]+/), optWs).map(function(r){
     return r[1]
   })
-  var combinator = alt(others, ancestory, empty).then(parser)
-  return seq(parser, combinator)
+  var separator
+  var combinator = alt(others, ancestory, empty).chain(function(sep){
+    separator = sep
+    return parser
+  }).many()
+  return seq(parser, combinator).map(function(r){
+    return {
+      selector : r,
+      combinator : separator
+
+    }
+  }).many()
 }
 
 var selectorParser = function(){
-  var selector = not(/[\s>~+]/)
+  //var selector = not(/[\s>~+]/)
+  var selector = any
   var attr = regex(/(\[.+\])?/)
   var element = null;
 
@@ -58,12 +69,7 @@ module.exports = function(css){
   //var combinator = combinatorParser()
 
   // main parser
-  var atom = combinatorSep(selector).map(function(r){
-    return {
-      selector : r[0],
-      combinator : r[1]
-    }
-  }).many()
+  var atom = combinatorSep(selector)
   var exec = lazy(function(){
     return atom
   })
