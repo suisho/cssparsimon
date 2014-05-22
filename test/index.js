@@ -37,7 +37,6 @@ describe("status true", function(){
 
 describe("combinator", function(){
   itParsed("a>b", function(r,st,v){
-    console.log(r)
     assert.equal(v[0].combinator, ">")
     assert.equal(v[1].combinator, null)
   })
