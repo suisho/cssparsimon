@@ -9,6 +9,7 @@ var succeed = Parsimmon.succeed
 var seq = Parsimmon.seq
 var alt = Parsimmon.alt
 var any = Parsimmon.any
+var all = Parsimmon.all
 var eof = Parsimmon.eof
 
 var lsqBlanket = lexeme(string("["))
@@ -31,28 +32,33 @@ var combinators = {
   'sibiling' : '~'
 }
 
-var combinatorParser = function(){
+var combinatorSep = function(parser){
   var empty = eof.result(null)
   var ancestory = regex(/\s+/).result(' ')
   var others = seq(optWs, regex(/[>~+]+/), optWs).map(function(r){
     return r[1]
   })
-  return lazy(function(){
-    return alt(others, ancestory, empty)
-  })
+  var combinator = alt(others, ancestory, empty).then(parser)
+  return seq(parser, combinator)
 }
 
 var selectorParser = function(){
   var selector = not(/[\s>~+]/)
-  return selector
+  var attr = regex(/(\[.+\])?/)
+  var element = null;
+
+  return selector.map(function(result){
+    //attr.
+  })
 }
 
 module.exports = function(css){
-  var selector = selectorParser()
-  var combinator = combinatorParser()
+  //var selector = any.many()
+  var selector = not(/[\s>~+]/)
+  //var combinator = combinatorParser()
 
   // main parser
-  var atom = seq(selector,combinator).map(function(r){
+  var atom = combinatorSep(selector).map(function(r){
     return {
       selector : r[0],
       combinator : r[1]
