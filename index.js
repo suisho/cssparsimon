@@ -32,7 +32,7 @@ var combinators = {
 }
 
 var combinatorParser = function(){
-  var empty = string('').result(null)
+  var empty = eof.result(null)
   var ancestory = regex(/\s+/).result(' ')
   var others = seq(optWs, regex(/[>~+]+/), optWs).map(function(r){
     return r[1]
