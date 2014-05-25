@@ -62,13 +62,13 @@ describe("combinator", function(){
 })
 
 describe("selector parser", function(){
-  var p = parser.elementParser()
+  var p = parser.elementParser
   it("", function(){
     //console.log(p.parse("a[a]"))
   })
 })
 describe("attr parser", function(){
-  var p = parser.attrParser()
+  var p = parser.attrParser
   it("", function(){
     //console.log(p.parse("[a]"))
     //console.log(p.parse("[a='b']"))
@@ -82,7 +82,7 @@ describe("value parser", function(){
     })
   }
   var itParseValue = function(val, expect){
-    itParseParser(parser.valueParser(), val, expect)
+    itParseParser(parser.valueParser, val, expect)
   }
 
   itParseValue('aaa', 'aaa')

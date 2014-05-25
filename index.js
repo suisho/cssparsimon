@@ -25,103 +25,74 @@ function not(reg){
   return regex(RegExp("((?!"+reg.source+").)+"))
 }
 
-var combinators = {
-  'descendant' : '\s',
-  'child' : '>',
-  'adjacent' : '+',
-  'sibiling' : '~'
-}
 
-var combinatorInner = function(combinator, parser){
-  return parser
-}
+var cssparsimmon = (function(){
+  var combinators = {
+    'descendant' : '\s',
+    'child' : '>',
+    'adjacent' : '+',
+    'sibiling' : '~'
+  }
 
-var combinatorParser = function(){
-  var empty = eof.result(null)
-  var ancestory = regex(/\s+/).result(' ')
-  var others = seq(optWs, regex(/[>~+]+/), optWs).map(function(r){
-    return r[1]
-  })
+  var combinator = lazy(function(){
+    var empty = eof.result(null)
+    var ancestory = regex(/\s+/).result(' ')
+    var others = seq(optWs, regex(/[>~+]+/), optWs).map(function(r){
+      return r[1]
+    })
 
-  return lazy(function(){
     return alt(others, ancestory, empty)
   })
-}
 
-var valueParser = function(){
-  var double = string('"').then(regex(/(\\"|[^"])+/)).skip(string('"'))
-  var single = string("'").then(regex(/(\\'|[^'])+/)).skip(string("'"))
-  var none = letters // TODO: Not exactly
-  return alt(double, single, none)
-}
-var attrCallParser = function(){
-  var keys = regex(/[^\]]/)
-  var operators = regex(/[^$~]?=/)
-  return alt(
-    seq(keys, operators,valueParser()),
-    keys
-  )
-}
-
-var attrParser = function(){
-  return string("[").chain(attrCallParser).skip(string("]"))
-}
-
-var elementParser = function(){
-  var selector = not(/[\s>~+]/)
-  //var selector = any
-  var attr = attrParser()
-  var element = null;
-
-  return selector.map(function(result){
-    return result
+  var value = lazy(function(){
+    var double = string('"').then(regex(/(\\"|[^"])+/)).skip(string('"'))
+    var single = string("'").then(regex(/(\\'|[^'])+/)).skip(string("'"))
+    var none = letters // TODO: Not exactly
+    return alt(double, single, none)
   })
-}
 
-var selectorAfterCombParser = function(elm, comb){
-  var sep = comb.chain(function(r){
-    return elm.map(function(e){
-      return {
-        combinator : r,
-        element : e,
-      }
+  var attr = lazy(function(){
+    var attrCallParser = function(){
+      var keys = regex(/[^\]]/)
+      var operators = regex(/[^$~]?=/)
+      return alt(
+        seq(keys, operators, value),
+        keys
+      )
+    }
+
+    return string("[").chain(attrCallParser).skip(string("]"))
+  })
+
+  var element = lazy(function(){
+    var elm = not(/[\s>~+]/)
+    return elm.map(function(result){
+      return result
     })
-  }).many()
-  return seq(elm, sep).map(function(r){
-    var first = {
-      combinator : null,
-      element : r[0],
-    }
-    return [first].concat(r[1])
   })
-}
-
-var selectorParser = function(elm, comb){
-  return seq(elm, comb).map(function(r){
-    return {
-      element : r[0],
-      combinator : r[1]
-    }
-  }).many()
-}
-
-var mainParser = function(){
-  //var selector = all
-  var element = not(/[\s>~+]/)
-  var combinator = combinatorParser()
 
   // main parser
-  return lazy(function(){
-    return selectorParser(element, combinator)
+  var selector = lazy(function(){
+    return seq(element, combinator).map(function(r){
+      return {
+        element : r[0],
+        combinator : r[1]
+      }
+    }).many()
   })
-}
-var main = function(css){
-  return mainParser().parse(css)
-}
+
+  return {
+    selector : selector,
+    value : value,
+    element : element,
+    attr : attr
+  }
+})()
 
 
-module.exports = main
-module.exports.valueParser = valueParser
-module.exports.elementParser = elementParser
-module.exports.attrParser = attrParser
-module.exports.attrParser = attrParser
+module.exports = function(css){
+  return cssparsimmon.selector.parse(css)
+}
+module.exports.valueParser = cssparsimmon.value
+module.exports.elementParser = cssparsimmon.element
+module.exports.attrParser = cssparsimmon.attr
