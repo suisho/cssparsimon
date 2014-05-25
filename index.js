@@ -53,25 +53,24 @@ var cssparsimmon = (function(){
 
   var attr = lazy(function(){
     var attrCallParser = function(){
-      var keys = regex(/[^\]]/)
+      var keys = regex(/[^\]]+/)
       var operators = regex(/[^$~]?=/)
       return alt(
         seq(keys, operators, value),
         keys
       )
     }
-
     return string("[").chain(attrCallParser).skip(string("]"))
   })
 
   var element = lazy(function(){
-    var elm = not(/[\s>~+]/)
-    return elm.map(function(result){
-      return result
-    })
+    var elm = not(/[\s>~+\[]/)
+    return alt(
+      seq(elm, attr.many())
+    )
   })
 
-  // main parser
+  // endpoint
   var selector = lazy(function(){
     return seq(element, combinator).map(function(r){
       return {
