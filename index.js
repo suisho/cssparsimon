@@ -63,11 +63,16 @@ var valueParser = function(){
   return alt(double, single, none)
 }
 var attrCallParser = function(){
-
+  var keys = regex(/[^\]]/)
+  var operators = regex(/[^$~]?=/)
+  return alt(
+    seq(keys, operators,valueParser()),
+    keys
+  )
 }
 
 var attrParser = function(){
-  return string("[").then(regex(/([^\]])+/)).skip(string("]"))
+  return string("[").chain(attrCallParser).skip(string("]"))
 }
 
 var selectorParser = function(){
@@ -99,4 +104,5 @@ var main = function(css){
 module.exports = main
 module.exports.valueParser = valueParser
 module.exports.selectorParser = selectorParser
+module.exports.attrParser = attrParser
 module.exports.attrParser = attrParser
