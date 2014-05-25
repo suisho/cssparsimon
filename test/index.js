@@ -71,27 +71,36 @@ describe("selector parser", function(){
     //console.log(p.parse("a[a]"))
   })
 })
-describe("attr parser", function(){
-  var p = parser.attrParser
-  it("", function(){
-    //console.log(p.parse("[a]"))
-    //console.log(p.parse("[a='b']"))
-  })
-})
-describe("value parser", function(){
+
+describe("breakdon parsers", function(){
   var itParseParser = function(p, val,expect){
     it(val, function(){
       var parsed = p.parse(val)
-      assert.equal(expect, parsed.value)
+      assert.deepEqual(expect, parsed.value)
     })
   }
-  var itParseValue = function(val, expect){
-    itParseParser(parser.valueParser, val, expect)
-  }
 
-  itParseValue('aaa', 'aaa')
-  itParseValue('"aaa"', 'aaa')
-  itParseValue('"aa\\"aa"', 'aa\\"aa')
-  itParseValue("'aaa'", 'aaa')
-  itParseValue("'aa\\'aa'", "aa\\'aa")
+  describe("attr parser", function(){
+    var itParseAttr = function(val, expect){
+      itParseParser(parser.attrParser, val, expect)
+    }
+    itParseAttr("[a]", {attr : "a"})
+    itParseAttr("[a=b]", {
+      attr : "a",
+      operator : "=",
+      value : "b"
+    })
+  })
+
+  describe("value parser", function(){
+    var itParseValue = function(val, expect){
+      itParseParser(parser.valueParser, val, expect)
+    }
+
+    itParseValue('aaa', 'aaa')
+    itParseValue('"aaa"', 'aaa')
+    itParseValue('"aa\\"aa"', 'aa\\"aa')
+    itParseValue("'aaa'", 'aaa')
+    itParseValue("'aa\\'aa'", "aa\\'aa")
+  })
 })

@@ -1,4 +1,5 @@
 var Parsimmon = require("parsimmon")
+var VerEx = require("verbal-expressions");
 
 // Parsimmon
 var regex = Parsimmon.regex;
@@ -20,10 +21,20 @@ function dbg(x){
   return x
 }
 
-function lexeme(p) { return p.skip(optWs); }
-function not(reg){
-  return regex(RegExp("((?!"+reg.source+").)+"))
+function regNot = function(re){
+  return RegExp("((?!"+reg.source+").)+")
 }
+
+function regOr = function(reArray){
+  return RegExp(reArray.map(function(re){
+    return re.source || re
+  }).join("|"))
+}
+
+function not(reg){
+  return regex(regNot)
+}
+
 
 
 var cssparsimmon = (function(){
@@ -54,10 +65,18 @@ var cssparsimmon = (function(){
   var attr = lazy(function(){
     var attrCallParser = function(){
       var keys = regex(/[^\]]+/)
-      var operators = regex(/[^$~]?=/)
+      var operators = regex(/[\^$~]?=/)
       return alt(
-        seq(keys, operators, value),
-        keys
+        seq(keys, operators, value).map(function(r){
+          return {
+            attr : r[0],
+            operator : r[1],
+            value : r[2]
+          }
+        }),
+        keys.map(function(r){
+          return { attr : r }
+        })
       )
     }
     return string("[").chain(attrCallParser).skip(string("]"))
