@@ -71,7 +71,7 @@ var attrParser = function(){
   return string("[").chain(attrCallParser).skip(string("]"))
 }
 
-var selectorParser = function(){
+var elementParser = function(){
   var selector = not(/[\s>~+]/)
   //var selector = any
   var attr = attrParser()
@@ -82,21 +82,24 @@ var selectorParser = function(){
   })
 }
 
-var mainParser = function(){
-  //var selector = all
-  var selector = not(/[\s>~+]/)
-  var combinator = combinatorParser()
-
-  // main parser
-  var atom = seq(selector, combinator).map(function(r){
+var selectorParser = function(elm, comb){
+  return seq(elm, comb).map(function(r){
     return {
-      selector : r[0],
+      element : r[0],
       combinator : r[1]
     }
   }).many()
+}
+
+var mainParser = function(){
+  //var selector = all
+  var element = not(/[\s>~+]/)
+  var combinator = combinatorParser()
+
+  // main parser
 
   return lazy(function(){
-    return atom
+    return selectorParser(element, combinator)
   })
 }
 var main = function(css){
@@ -106,6 +109,6 @@ var main = function(css){
 
 module.exports = main
 module.exports.valueParser = valueParser
-module.exports.selectorParser = selectorParser
+module.exports.elementParser = elementParser
 module.exports.attrParser = attrParser
 module.exports.attrParser = attrParser
