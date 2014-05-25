@@ -32,8 +32,8 @@ describe("status true", function(){
   itStatusTrue("a + b")
   itStatusTrue("a +b")
   itStatusTrue("a+ b")
-  itStatusTrue("a+b~c", "attr")
-  itStatusTrue("a[foo] c", "attr")
+  itStatusTrue("a+b~c")
+  itStatusTrue("a[foo] c")
 })
 
 describe("combinator", function(){
@@ -57,4 +57,34 @@ describe("combinator", function(){
     assert.equal(v[0].combinator, ">")
     assert.equal(v[1].combinator, null)
   })
+})
+
+describe("selector parser", function(){
+  var p = parser.selectorParser()
+  it("", function(){
+    console.log(p.parse("a[a]"))
+  })
+})
+describe("attr parser", function(){
+  var p = parser.attrParser()
+  it("", function(){
+    console.log(p.parse("[a]"))
+  })
+})
+describe("value parser", function(){
+  var itParseParser = function(p, val,expect){
+    it(val, function(){
+      var parsed = p.parse(val)
+      assert.equal(expect, parsed.value)
+    })
+  }
+  var itParseValue = function(val, expect){
+    itParseParser(parser.valueParser(), val, expect)
+  }
+
+  itParseValue('aaa', 'aaa')
+  itParseValue('"aaa"', 'aaa')
+  itParseValue('"aa\\"aa"', 'aa\\"aa')
+  itParseValue("'aaa'", 'aaa')
+  itParseValue("'aa\\'aa'", "aa\\'aa")
 })

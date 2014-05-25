@@ -11,12 +11,12 @@ var alt = Parsimmon.alt
 var any = Parsimmon.any
 var all = Parsimmon.all
 var eof = Parsimmon.eof
-
-var lsqBlanket = lexeme(string("["))
-var rsqBlanket = lexeme(string("]"))
+var letters = Parsimmon.letters
 
 function dbg(x){
-  console.log("debug:" , x)
+  console.log("=>>>===")
+  console.log( x)
+  console.log("==<<<==")
   return x
 }
 
@@ -38,33 +38,51 @@ var combinatorSep = function(parser){
   var others = seq(optWs, regex(/[>~+]+/), optWs).map(function(r){
     return r[1]
   })
-  var separator
-  var combinator = alt(others, ancestory, empty).chain(function(sep){
-    separator = sep
+  var comb
+  var combinator = alt(others, ancestory, empty).chain(function(p){
+    comb = p
     return parser
   }).many()
   return seq(parser, combinator).map(function(r){
+
     return {
       selector : r,
-      combinator : separator
-
+      combinator : null
     }
   }).many()
 }
 
+/*var between = function(start, end){
+  return string(start).then(not(end)).skip(end)
+}*/
+
+var valueParser = function(){
+  var double = string('"').then(regex(/(\\"|[^"])+/)).skip(string('"'))
+  var single = string("'").then(regex(/(\\'|[^'])+/)).skip(string("'"))
+  var none = letters
+  return alt(double, single, none)
+}
+var attrCallParser = function(){
+
+}
+
+var attrParser = function(){
+  return string("[").then(regex(/([^\]])+/)).skip(string("]"))
+}
+
 var selectorParser = function(){
-  //var selector = not(/[\s>~+]/)
-  var selector = any
-  var attr = regex(/(\[.+\])?/)
+  var selector = not(/[\s>~+]/)
+  //var selector = any
+  var attr = attrParser()
   var element = null;
 
   return selector.map(function(result){
-    //attr.
+    return result
   })
 }
 
-module.exports = function(css){
-  //var selector = any.many()
+var main = function(css){
+  //var selector = all
   var selector = not(/[\s>~+]/)
   //var combinator = combinatorParser()
 
@@ -76,3 +94,9 @@ module.exports = function(css){
 
   return exec.parse(css)
 }
+
+
+module.exports = main
+module.exports.valueParser = valueParser
+module.exports.selectorParser = selectorParser
+module.exports.attrParser = attrParser
