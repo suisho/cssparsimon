@@ -48,10 +48,6 @@ var combinatorParser = function(){
   })
 }
 
-/*var between = function(start, end){
-  return string(start).then(not(end)).skip(end)
-}*/
-
 var valueParser = function(){
   var double = string('"').then(regex(/(\\"|[^"])+/)).skip(string('"'))
   var single = string("'").then(regex(/(\\'|[^'])+/)).skip(string("'"))
@@ -82,6 +78,24 @@ var elementParser = function(){
   })
 }
 
+var selectorAfterCombParser = function(elm, comb){
+  var sep = comb.chain(function(r){
+    return elm.map(function(e){
+      return {
+        combinator : r,
+        element : e,
+      }
+    })
+  }).many()
+  return seq(elm, sep).map(function(r){
+    var first = {
+      combinator : null,
+      element : r[0],
+    }
+    return [first].concat(r[1])
+  })
+}
+
 var selectorParser = function(elm, comb){
   return seq(elm, comb).map(function(r){
     return {
@@ -97,7 +111,6 @@ var mainParser = function(){
   var combinator = combinatorParser()
 
   // main parser
-
   return lazy(function(){
     return selectorParser(element, combinator)
   })
