@@ -32,24 +32,20 @@ var combinators = {
   'sibiling' : '~'
 }
 
-var combinatorSep = function(parser){
+var combinatorInner = function(combinator, parser){
+  return parser
+}
+
+var combinatorParser = function(){
   var empty = eof.result(null)
   var ancestory = regex(/\s+/).result(' ')
   var others = seq(optWs, regex(/[>~+]+/), optWs).map(function(r){
     return r[1]
   })
-  var comb
-  var combinator = alt(others, ancestory, empty).chain(function(p){
-    comb = p
-    return parser
-  }).many()
-  return seq(parser, combinator).map(function(r){
 
-    return {
-      selector : r,
-      combinator : null
-    }
-  }).many()
+  return lazy(function(){
+    return alt(others, ancestory, empty)
+  })
 }
 
 /*var between = function(start, end){
@@ -59,7 +55,7 @@ var combinatorSep = function(parser){
 var valueParser = function(){
   var double = string('"').then(regex(/(\\"|[^"])+/)).skip(string('"'))
   var single = string("'").then(regex(/(\\'|[^'])+/)).skip(string("'"))
-  var none = letters
+  var none = letters // TODO: Not exactly
   return alt(double, single, none)
 }
 var attrCallParser = function(){
@@ -86,18 +82,25 @@ var selectorParser = function(){
   })
 }
 
-var main = function(css){
+var mainParser = function(){
   //var selector = all
   var selector = not(/[\s>~+]/)
-  //var combinator = combinatorParser()
+  var combinator = combinatorParser()
 
   // main parser
-  var atom = combinatorSep(selector)
-  var exec = lazy(function(){
+  var atom = seq(selector, combinator).map(function(r){
+    return {
+      selector : r[0],
+      combinator : r[1]
+    }
+  }).many()
+
+  return lazy(function(){
     return atom
   })
-
-  return exec.parse(css)
+}
+var main = function(css){
+  return mainParser().parse(css)
 }
 
 

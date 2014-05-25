@@ -7,7 +7,8 @@ var itParsed = function(css, memo, cb){
     memo = ""
   }
   memo = memo || ""
-  it(css +" "+ memo, function(){
+  it("= "+ css +" "+ memo, function(){
+
     var result = parser(css)
     cb(result, result.status, result.value)
   })
@@ -15,8 +16,8 @@ var itParsed = function(css, memo, cb){
 
 var itStatusTrue = function(css, memo){
   itParsed(css,memo, function(r,st,v){
-    console.log(require("util").inspect([css,r], {depth:null}))
-    //assert.ok(st)
+    //console.log(require("util").inspect([css,r], {depth:null}))
+    assert.ok(st)
   })
 }
 
@@ -62,13 +63,14 @@ describe("combinator", function(){
 describe("selector parser", function(){
   var p = parser.selectorParser()
   it("", function(){
-    console.log(p.parse("a[a]"))
+    //console.log(p.parse("a[a]"))
   })
 })
 describe("attr parser", function(){
   var p = parser.attrParser()
   it("", function(){
-    console.log(p.parse("[a]"))
+    //console.log(p.parse("[a]"))
+    //console.log(p.parse("[a='b']"))
   })
 })
 describe("value parser", function(){
