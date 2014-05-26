@@ -30,17 +30,25 @@ function not(reg){
   return regex(regNot(reg))
 }
 
+var charWith = function(pre, chars, post){
+  // escape and concat chars
+  var ch = chars.map(function(c){
+    return "\\"+c
+  }).join("")
+  return regex(RegExp(pre + chars + post))
+}
+
 var optSymbol = function(chars){
-  return regex(RegExp("["+chars.join("")+"]?"))
+  return charWith("[", chars, "]?")
 }
 
 // regex match chars
 var symbol = function(chars){
-  return regex(RegExp("["+chars.join("")+"]"))
+  return charWith("[", chars , "]")
 }
 // not symbols
 var othersOf = function(chars){
-  return regex(RegExp("[^"+chars.join("")+"]+"))
+  return charWith("[^", chars, "]+")
 }
 
 
@@ -72,7 +80,7 @@ var cssparsimmon = (function(){
   })
 
   var attr = lazy(function(){
-    var operatorSymbols = ["\\^", "$", "~"]
+    var operatorSymbols = ["\\^", "$", "~", "|"]
     var keys = othersOf(operatorSymbols.concat(["\\]", "="]))
     var operators = seq(optSymbol(operatorSymbols), string("="))
     var keyAndValue = seq(keys, operators, value).map(function(r){
