@@ -95,6 +95,11 @@ describe("breakdon parsers", function(){
       operator : "=",
       value : "b"
     })
+    itParseAttr("[a~=b]", {
+      attr : "a",
+      operator : "~=",
+      value : "b"
+    })
   })
 
   describe("value parser", function(){

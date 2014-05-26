@@ -30,6 +30,10 @@ function not(reg){
   return regex(regNot(reg))
 }
 
+var optSymbol = function(chars){
+  return regex(RegExp("["+chars.join("")+"]?"))
+}
+
 // regex match chars
 var symbol = function(chars){
   return regex(RegExp("["+chars.join("")+"]"))
@@ -41,7 +45,7 @@ var othersOf = function(chars){
 
 
 var cssparsimmon = (function(){
-  var combinatorSymbols = [">", "+", "~", "\\s"]
+  var combinatorSymbols = [">", "+", "~", '\\s']
   var combinator = lazy(function(){
     var empty = optWs.then(eof).result(null)
     var ancestory = ws.result(' ')
@@ -68,23 +72,21 @@ var cssparsimmon = (function(){
   })
 
   var attr = lazy(function(){
-    var attrCallParser = function(){
-      var operatorSymbols = ["^", "$", "~"]
-      var keys = othersOf(operatorSymbols)
-      var operators = regex(/[\^$~]?=/)
-      var keyAndValue = seq(keys, operators, value).map(function(r){
-        return {
-          attr : r[0],
-          operator : r[1],
-          value : r[2]
-        }
-      })
-      var onlyKey = keys.map(function(r){
-        return { attr : r }
-      })
-      return alt(keyAndValue, onlyKey)
-    }
-    return string("[").chain(attrCallParser).skip(string("]"))
+    var operatorSymbols = ["\\^", "$", "~"]
+    var keys = othersOf(operatorSymbols.concat(["\\]", "="]))
+    var operators = seq(optSymbol(operatorSymbols), string("="))
+    var keyAndValue = seq(keys, operators, value).map(function(r){
+      return {
+        attr : r[0],
+        operator : r[1].join(""),
+        value : r[2]
+      }
+    })
+    var onlyKey = keys.map(function(r){
+      return { attr : r }
+    })
+    var attrLiteral = alt(keyAndValue, onlyKey)
+    return string("[").then(attrLiteral).skip(string("]"))
   })
 
 
