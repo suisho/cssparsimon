@@ -128,6 +128,8 @@ var cssparsimmon = (function(){
 module.exports = function(css){
   return cssparsimmon.selector.parse(css)
 }
+module.exports.parser = cssparsimmon.selector
+
 module.exports.valueParser = cssparsimmon.value
 module.exports.elementParser = cssparsimmon.element
 module.exports.attrParser = cssparsimmon.attr
