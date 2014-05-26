@@ -51,6 +51,11 @@ describe("combinator", function(){
     assert.equal(v[0].combinator, " ")
     assert.equal(v[1].combinator, null)
   })
+  itParsed("a b ","needle", function(r,st,v){
+    console.log(v)
+    assert.equal(v[0].combinator, " ")
+    assert.equal(v[1].combinator, null)
+  })
   itParsed("a > b", function(r,st,v){
     assert.equal(v[0].combinator, ">")
     assert.equal(v[1].combinator, null)
@@ -73,7 +78,7 @@ describe("selector parser", function(){
 })
 
 describe("breakdon parsers", function(){
-  var itParseParser = function(p, val,expect){
+  var itParseParser = function(p, val, expect){
     it(val, function(){
       var parsed = p.parse(val)
       assert.deepEqual(expect, parsed.value)

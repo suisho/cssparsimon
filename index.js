@@ -21,38 +21,36 @@ function dbg(x){
   return x
 }
 
-function regNot = function(re){
-  return RegExp("((?!"+reg.source+").)+")
+var regNot = function(re){
+  return RegExp("((?!"+re.source+").)+")
 }
 
-function regOr = function(reArray){
-  return RegExp(reArray.map(function(re){
+var regOr = function(reArray){
+  return RegExp("[" + reArray.map(function(re){
     return re.source || re
-  }).join("|"))
+  }).join("") + "]")
 }
 
 function not(reg){
-  return regex(regNot)
+  return regex(regNot(reg))
 }
 
-
-
+var Symbols = function(){}
+//Symbols.prototype.combinators = [">", "+", "~", "\\s"]
+Symbols.prototype.combinators = [">", "+", "~", "\\s"]
+Symbols.prototype.attrOperators = ["$"]
+var symbols = new Symbols()
 var cssparsimmon = (function(){
-  var combinators = {
-    'descendant' : '\s',
-    'child' : '>',
-    'adjacent' : '+',
-    'sibiling' : '~'
-  }
 
   var combinator = lazy(function(){
-    var empty = eof.result(null)
+    var empty = optWs.then(eof).result(null)
     var ancestory = regex(/\s+/).result(' ')
-    var others = seq(optWs, regex(/[>~+]+/), optWs).map(function(r){
+    var othersReg = regex(regOr(symbols.combinators))
+    var others = seq(optWs, othersReg, optWs).map(function(r){
       return r[1]
     })
 
-    return alt(others, ancestory, empty)
+    return alt(empty, others, ancestory)
   })
 
   var value = lazy(function(){
@@ -83,7 +81,7 @@ var cssparsimmon = (function(){
   })
 
   var element = lazy(function(){
-    var elm = not(/[\s>~+\[]/)
+    var elm = not(regOr(symbols.combinators))
     return alt(
       seq(elm, attr.many())
     )
