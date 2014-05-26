@@ -18,6 +18,8 @@ var itStatusTrue = function(css, memo){
   itParsed(css,memo, function(r,st,v){
     try{
       assert.ok(st)
+      console.log(require("util").inspect([css,r], {depth:null}))
+
     }catch(e){
       console.log(require("util").inspect([css,r], {depth:null}))
       throw e
@@ -39,7 +41,19 @@ describe("status true", function(){
   itStatusTrue("a+ b")
   itStatusTrue("a+b~c")
   itStatusTrue("aa+bb~cc")
+  itStatusTrue("a[foo]")
   itStatusTrue("a[foo] c")
+  itStatusTrue("a[foo=baz] c")
+  itStatusTrue("a[foo~=baz] c")
+  itStatusTrue("a[foo$=baz] c")
+  itStatusTrue("a[foo^=baz] c")
+  itStatusTrue("a[foo='baz'] c")
+  itStatusTrue('a[foo="baz"] c')
+  itStatusTrue('a:pseudo c')
+  itStatusTrue('a:pseudo:p2 c')
+  itStatusTrue('a:not(hoge) c')
+  itStatusTrue('a:link:not(hoge) c')
+  itStatusTrue('a:not(hoge):not(fuga) c')
 })
 
 describe("combinator", function(){
@@ -51,8 +65,7 @@ describe("combinator", function(){
     assert.equal(v[0].combinator, " ")
     assert.equal(v[1].combinator, null)
   })
-  itParsed("a b ","needle", function(r,st,v){
-    console.log(v)
+  itParsed("a b ", function(r,st,v){
     assert.equal(v[0].combinator, " ")
     assert.equal(v[1].combinator, null)
   })
@@ -81,6 +94,7 @@ describe("breakdon parsers", function(){
   var itParseParser = function(p, val, expect){
     it(val, function(){
       var parsed = p.parse(val)
+      //console.log(parsed)
       assert.deepEqual(expect, parsed.value)
     })
   }

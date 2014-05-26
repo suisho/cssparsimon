@@ -30,12 +30,9 @@ function not(reg){
   return regex(regNot(reg))
 }
 
+// character helper
 var charWith = function(pre, chars, post){
-  // escape and concat chars
-  var ch = chars.map(function(c){
-    return "\\"+c
-  }).join("")
-  return regex(RegExp(pre + chars + post))
+  return regex(RegExp(pre + chars.join("") + post))
 }
 
 var optSymbol = function(chars){
@@ -53,7 +50,7 @@ var othersOf = function(chars){
 
 
 var cssparsimmon = (function(){
-  var combinatorSymbols = [">", "+", "~", '\\s']
+  var combinatorSymbols = [">", "+", "~", "\\s"]
   var combinator = lazy(function(){
     var empty = optWs.then(eof).result(null)
     var ancestory = ws.result(' ')
@@ -66,9 +63,16 @@ var cssparsimmon = (function(){
   })
 
   var element = lazy(function(){
-    var elm = othersOf(combinatorSymbols)
+    var elm = othersOf(combinatorSymbols.concat([":"]))
     return alt(
-      seq(elm, attr.many())
+      seq(elm, attr.many(), pseudo.many()).map(function(r){
+        var ret = {
+          element : r[0]
+        }
+        if(r[1].length > 0) ret["attr"] = r[1]
+        if(r[2].length > 0) ret["pseudo"] = r[2]
+        return ret
+      })
     )
   })
 
@@ -80,7 +84,7 @@ var cssparsimmon = (function(){
   })
 
   var attr = lazy(function(){
-    var operatorSymbols = ["\\^", "$", "~", "|"]
+    var operatorSymbols = ["\\^", "\\$", "\\~", "\\|"]
     var keys = othersOf(operatorSymbols.concat(["\\]", "="]))
     var operators = seq(optSymbol(operatorSymbols), string("="))
     var keyAndValue = seq(keys, operators, value).map(function(r){
@@ -97,12 +101,16 @@ var cssparsimmon = (function(){
     return string("[").then(attrLiteral).skip(string("]"))
   })
 
+  var pseudo = lazy(function(){
+    return string(":").then(othersOf(combinatorSymbols.concat(":")))
+  })
+
 
   // endpoint
   var selector = lazy(function(){
     return seq(element, combinator).map(function(r){
       return {
-        element : r[0],
+        selector : r[0],
         combinator : r[1]
       }
     }).many()
