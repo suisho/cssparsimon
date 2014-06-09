@@ -11,6 +11,7 @@
     "verbal-expressions": "^0.1.2"
   },
   "devDependencies": {
+    "matcha": "^0.5.0",
     "mocha": "^1.19.0"
   },
   "scripts": {
