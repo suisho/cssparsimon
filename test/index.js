@@ -18,7 +18,7 @@ var itStatusTrue = function(css, memo){
   itParsed(css,memo, function(r,st,v){
     try{
       assert.ok(st)
-      console.log(require("util").inspect([css,r], {depth:null}))
+      //console.log(require("util").inspect([css,r], {depth:null}))
 
     }catch(e){
       console.log(require("util").inspect([css,r], {depth:null}))
